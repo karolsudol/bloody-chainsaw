@@ -41,7 +41,7 @@ impl VaultIndexer {
         let provider = Arc::new(provider);
         
         let vault_address = Address::from_str(vault_address)?;
-        let abi = serde_json::from_str(abi)?;
+        let abi: ethers::abi::Abi = serde_json::from_str(abi)?;
         let contract = Contract::new(vault_address, abi, provider.clone());
 
         Ok(Self {
@@ -106,7 +106,7 @@ impl VaultIndexer {
                     timestamp,
                 }))
             },
-            sig if sig == keccak256(withdraw_sig).as_bytes() => {
+            sig if sig == keccak256(withdraw_sig).as_ref() => {
                 let sender = Address::from_slice(&topics[1][12..]);
                 let receiver = Address::from_slice(&topics[2][12..]);
                 let owner = Address::from_slice(&topics[3][12..]);
