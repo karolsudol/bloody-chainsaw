@@ -197,12 +197,19 @@ async fn main() -> Result<()> {
     dotenv::dotenv().ok();
     env_logger::init();
 
-    // Use WSS URL instead of HTTP
-    let ws_url = env::var("WSS_URL").expect("WSS_URL must be set");
-    let vault_address = env::var("VAULT_ADDRESS").expect("VAULT_ADDRESS must be set");
+    // Load and validate environment variables with more descriptive error messages
+    let ws_url = env::var("WSS_URL")
+        .map_err(|_| anyhow::anyhow!("WSS_URL environment variable not set"))?;
+    
+    let vault_address = env::var("VAULT_ADDRESS")
+        .map_err(|_| anyhow::anyhow!("VAULT_ADDRESS environment variable not set."))?;
+    
     let abi = include_str!("../../abi/vault.json");
 
+    log::info!("Connecting to Ethereum node at {}", ws_url);
     let indexer = VaultIndexer::new(&ws_url, &vault_address, abi).await?;
+    
+    log::info!("Starting indexer for vault at {}", vault_address);
     indexer.run().await?;
 
     Ok(())
